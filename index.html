@@ -4,30 +4,38 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta http-equiv="X-UA-Compatible" content="ie=edge">
-        <title>NINJA-AR</title>
+        <!-- <meta http-equiv="X-UA-Compatible" content="ie=edge"> -->
+        <title>AR-TEST</title>
 
-        <script src="https://aframe.io/releases/0.9.2/aframe.min.js"></script>
+        <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
         <script src="https://cdn.rawgit.com/jeromeetienne/AR.js/1.6.2/aframe/build/aframe-ar.js"></script>
     </head>
 
     <body style="margin : 0px; overflow: hidden;">
         <a-scene embedded arjs="debugUIEnabled:false;">
-            <a-entity camera></a-entity>
 
             <!-- Markerを表示した際の処理を以下に記述する. -->
+
             <!-- ARマーカーのファイルをここで指定する. -->
             <a-marker type="pattern" url="img/pattern_simple_qrcode.patt">
 
+                <!-- 画像表示サンプル -->
                 <!-- 表示したい画像を src= - で指定する. -->
                 <!-- 画像の大きさは width と height で設定可能. -->
                 <!-- 画像を表示させる位置は position で設定可能. -->
                 <!-- 画王を水平に表示させる場合は下記の rotation でOK. -->
-                <a-image width="5" height="5" position="0.2 0.4 0.4" rotation="-90 0 0" src="img/icon.png">
-                    
-                </a-image>
+                <!-- <a-image width="5" height="5" position="0.2 0.4 0.4" rotation="-90 0 0" src="img/icon.png"> -->
+                <!-- </a-image> -->
+
+                <a-sphere scale=".25 .25 .25" position="0 .5 0" color="#111">
+                    <a-animation attribute="position" to="0 1 0" direction="alternate" dur="2000" repeat="indefinite">
+                    </a-animation>
+                </a-sphere>
 
             </a-marker>
+
+            <a-entity camera></a-entity>
+
         </a-scene>
     </body>
 </html>
