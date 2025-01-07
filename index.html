@@ -1,68 +1,96 @@
 <!DOCTYPE html>
+
 <html>
-  <head>
+<head>
+  <title>three.js + ar.js</title>
+  <meta name="viewport" content="width=device-width, viewport-fit=cover, shrink-to-fit=no" />
+  <style>
+    * {
+      margin: 0; padding: 0;
+    }
 
-    <script src="https://cdn.jsdelivr.net/gh/aframevr/aframe@1c2407b26c61958baa93967b5412487cd94b290b/dist/aframe-master.min.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/3.0.0/aframe/build/aframe-ar-nft.js"></script>
+    .wrapper {
+      position: relative;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <canvas></canvas>
+  </div>
+  <script src="https://unpkg.com/three@0.127.0/build/three.min.js"></script>
+  <script src="https://raw.githack.com/AR-js-org/AR.js/3.3.3/three.js/build/ar-nft.js"></script><!--❶ イメージトラッキング用のスクリプトに変更-->
+  <script>
+    const renderer = new THREE.WebGLRenderer({
+      canvas: document.querySelector('canvas'),
+      antialias: true,
+      alpha: true
+    });
+    const camera = new THREE.PerspectiveCamera();
+    const scene = new THREE.Scene();
+    const markerRoot = new THREE.Group();
+    const arToolkitContext = new THREEx.ArToolkitContext({
+      detectionMode: 'mono'
+    });
+    const arToolkitSource = new THREEx.ArToolkitSource({
+      sourceType: 'webcam'
+    });
+    const arMarkerControls = new THREEx.ArMarkerControls(arToolkitContext, camera, {
+      type: 'nft', // 'nft'に変更
+      descriptorsUrl : 'marker/filename', // ❷ https://carnaux.github.io/NFT-Marker-Creator/ で作成
+      changeMatrixMode: 'cameraTransformMatrix'
+    });
 
-    <style>
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    scene.add(camera); // ❸ カメラをシーンに追加
+    
+    window.addEventListener('resize', handleResize, {
+      passive: true
+    });
 
-      .arjs-loader
-      {
-        height: 100%;
-        width: 100%;
-        position: absolute;
-        top: 0;
-        left: 0;
-        background-color: rgba( 0, 0, 0,0.8 );
-        z-index: 9999;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+    window.addEventListener('arjs-nft-loaded', (evt) =>{
+      console.log(evt);
+    });
+
+    arToolkitContext.init(() => {
+      camera.projectionMatrix.copy(arToolkitContext.getProjectionMatrix());
+    });
+
+    arToolkitSource.init(() => {
+      document.querySelector('.wrapper').appendChild(arToolkitSource.domElement);
+      setTimeout(() => handleResize(), 400);
+    });
+
+    scene.visible = false;
+    scene.add(markerRoot);
+
+    const cube = new THREE.Mesh(
+      new THREE.BoxGeometry(100, 100, 100), // ❹ 大きめに設定
+      new THREE.MeshNormalMaterial()
+    );
+
+    cube.position.set(0, 0, 0); // ❹ 一旦、原点に表示
+
+    markerRoot.add(cube);
+
+    renderer.setAnimationLoop((delta) => {
+      if (arToolkitSource.ready) {
+        arToolkitContext.update(arToolkitSource.domElement);
       }
 
-      .arjs-loader div
-      {
-        text-align: center;
-        font-size: 1.25rem;
-        color: white;
+      scene.visible = camera.visible; // ❺ 自力で表示・非表示を切り替える
+      renderer.render(scene, camera);
+    });
+
+    function handleResize() {
+      if (arToolkitSource.ready) {
+        arToolkitSource.onResize();
+        arToolkitSource.copySizeTo(renderer.domElement);
       }
 
-    </style>
-  </head>
-
-  <body sytle="margin : 0px; overflow: hidden;">
-
-    <!-- minimal loader shown until image discriptors are loaded -->
-    <div class="arjs-loader">
-      <div> Loading, please wait... </div>
-    </div>
-
-    <a-scene
-     vr-mode-ui="enabled: false;"
-     renderer="logarithmicDepthBuffer: true; precision: midium;"
-     embedded
-     arjs="trackinMethod: best; sourceType: webcam; debugUIEnabled: false;"
-    >
-
-      <!-- we use cors proxy to avoid cross-origin problems ATTENTION! you need to set up your server -->
-      <a-nft
-      type="nft"
-      url="https://github.com/amaebi-dm/my_arjs_works/raw/refs/heads/main/dinosaur"
-      smooth="true"
-      smoothCount="10"
-      smoothTolerance=".01"
-      smoothThreshold="5"
-      >
-
-        <a-box position="80 80 0" scale="70 70 70" color="tomato" wireframe="true" animation="property: rotation; to: 0 360 0; loop: true; dur: 20000"></a-box>
-
-      </a-nft>
-
-      <a-entity camera></a-entity>
-
-    </a-scene>
-
-  </body>
-
+      renderer.setPixelRatio(window.devicePixelRatio);
+    }
+  </script>
+</body>
 </html>
