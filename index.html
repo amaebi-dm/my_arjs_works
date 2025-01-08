@@ -2,8 +2,8 @@
 
 <html>
     <head>
-    <title>three.js + ar.js</title>
-    <meta name="viewport" content="width=device-width, viewport-fit=cover, shrink-to-fit=no" />
+        <title>three.js + ar.js</title>
+        <meta name="viewport" content="width=device-width, viewport-fit=cover, shrink-to-fit=no" />
         <style>
             * {
             margin: 0; padding: 0;
@@ -13,15 +13,23 @@
             position: relative;
             overflow: hidden;
             }
+
+            .console {
+            position: fixed;
+            top: 8px;
+            right: 8px;
+            color: red;
+            }
         </style>
     </head>
 
     <body>
         <div class="wrapper">
             <canvas></canvas>
+            <p class="console"></p>
         </div>
         <script src="https://unpkg.com/three@0.127.0/build/three.min.js"></script>
-        <script src="https://raw.githack.com/AR-js-org/AR.js/3.3.3/three.js/build/ar-nft.js"></script><!--❶ イメージトラッキング用のスクリプトに変更-->
+        <script src="https://raw.githack.com/AR-js-org/AR.js/3.3.3/three.js/build/ar-nft.js"></script>
         <script>
             const renderer = new THREE.WebGLRenderer({
             canvas: document.querySelector('canvas'),
@@ -38,14 +46,17 @@
             sourceType: 'webcam'
             });
             const arMarkerControls = new THREEx.ArMarkerControls(arToolkitContext, camera, {
-            type: 'nft', // 'nft'に変更
-            descriptorsUrl : 'https://github.com/amaebi-dm/my_arjs_works/blob/main/marker/filename', // ❷ https://carnaux.github.io/NFT-Marker-Creator/ で作成 
+            type: 'nft',
+            descriptorsUrl : 'https://github.com/amaebi-dm/my_arjs_works/blob/main/marker/nft/filename',  //'arjs-nft/marker/54',  
             changeMatrixMode: 'cameraTransformMatrix'
             });
+            const lostDelay = 100;
+            let markerState = 'lost';
+            let timer = -1;
 
             renderer.setSize(window.innerWidth, window.innerHeight);
-            scene.add(camera); // ❸ カメラをシーンに追加
-            
+            scene.add(camera);
+
             window.addEventListener('resize', handleResize, {
             passive: true
             });
@@ -63,15 +74,35 @@
             setTimeout(() => handleResize(), 400);
             });
 
+            // マーカーが認識されている限り発火し続ける
+            arMarkerControls.addEventListener('markerFound', () => {
+            if (markerState === 'lost') {
+                console.log('Found');
+                document.querySelector('.console').innerText = 'Found';
+            }
+
+            markerState = 'found';
+
+            clearTimeout(timer);
+            timer = setTimeout(() => arMarkerControls.dispatchEvent({ type: 'markerLost' }),  lostDelay); // markerLostを発火させる
+            });
+
+            // 実装されていないので発火しない
+            arMarkerControls.addEventListener('markerLost', () => {
+            console.log('Lost');
+            document.querySelector('.console').innerText = 'Lost';
+            markerState = 'lost';
+            });
+
             scene.visible = false;
             scene.add(markerRoot);
 
             const cube = new THREE.Mesh(
-            new THREE.BoxGeometry(100, 100, 100), // ❹ 大きめに設定
+            new THREE.BoxGeometry(100, 100, 100),
             new THREE.MeshNormalMaterial()
             );
 
-            cube.position.set(0, 0, 0); // ❹ 一旦、原点に表示
+            cube.position.set(0, 0, 0);
 
             markerRoot.add(cube);
 
@@ -80,7 +111,7 @@
                 arToolkitContext.update(arToolkitSource.domElement);
             }
 
-            scene.visible = camera.visible; // ❺ 自力で表示・非表示を切り替える
+            scene.visible = camera.visible;
             renderer.render(scene, camera);
             });
 
