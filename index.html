@@ -46,8 +46,9 @@
             sourceType: 'webcam'
             });
             const arMarkerControls = new THREEx.ArMarkerControls(arToolkitContext, camera, {
-            type: 'nft',
-            descriptorsUrl : 'marker/nft/filename',  //'arjs-nft/marker/54',  
+            type: 'nft',            
+            url: 'https://github.com/amaebi-dm/my_arjs_works/blob/main/marker/nft/filename',
+            // descriptorsUrl : 'https://github.com/amaebi-dm/my_arjs_works/blob/main/marker/nft/filename',  //'arjs-nft/marker/54',  
             changeMatrixMode: 'cameraTransformMatrix'
             });
             const lostDelay = 100;
