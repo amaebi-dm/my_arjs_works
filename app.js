@@ -57,6 +57,7 @@ const setRenderer = () => {
   renderer.setClearColor(0x0000ff, 1.0);
   renderer.setSize(w, h);
   renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.xr.enabled = true; // WebXR フラグを有効化
   renderer.setAnimationLoop(() => {
     render();
   });
