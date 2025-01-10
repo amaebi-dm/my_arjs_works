@@ -1,10 +1,11 @@
 import * as THREE from "three";
-import { DeviceOrientationControls } from "./jsm/controls/DeviceOrientationControls.js";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { DeviceOrientationControls } from "three/addons/controls/DeviceOrientationControls.js";
+
 
 const width = 960;
 const height = 540;
 
-const dc = new DeviceOrientationControls();
 // レンダラーを作成
 const renderer = new THREE.WebGLRenderer({
   canvas: document.querySelector('#myCanvas')
